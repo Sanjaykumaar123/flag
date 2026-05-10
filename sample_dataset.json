@@ -1,0 +1,42 @@
+[
+  {
+    "id": "doc_001",
+    "domain": "finance",
+    "text": "In Q3 2025, the consolidated revenue increased by 14% year-over-year, reaching $1.2 billion. However, operating margins decreased from 22% to 18.5% due to supply chain disruptions in the APAC region. The CEO stated that 'the macroeconomic headwinds will persist into Q4, but our long-term structural advantages remain intact.' The board approved a $500M share buyback program. Operating expenses rose to $450 million, primarily driven by a 20% increase in R&D investments aimed at expanding the AI product portfolio."
+  },
+  {
+    "id": "doc_002",
+    "domain": "medical",
+    "text": "Patient is a 45-year-old male presenting with acute upper respiratory symptoms. Medical history includes Type 2 Diabetes and mild hypertension. Prescribed 500mg Amoxicillin twice daily for 7 days. Note: Patient reported a mild allergic reaction (hives) to penicillin during a childhood procedure, though this was not documented in the primary care transfer records. Proceed with caution and monitor for anaphylaxis. Blood pressure at intake was 135/85 mmHg, and resting heart rate was 88 bpm. Scheduled for a follow-up consultation in two weeks."
+  },
+  {
+    "id": "doc_003",
+    "domain": "legal",
+    "text": "This Non-Disclosure Agreement ('Agreement') is entered into by and between Acme Corp ('Disclosing Party') and Beta Industries ('Receiving Party'). The Receiving Party agrees to maintain the confidentiality of the Proprietary Information for a period of five (5) years from the Effective Date. Exclusions apply if the information becomes publicly known through no breach of this Agreement. Any disputes shall be resolved via binding arbitration in the State of Delaware. In the event of a breach, the Disclosing Party shall be entitled to seek injunctive relief in addition to monetary damages."
+  },
+  {
+    "id": "doc_004",
+    "domain": "technology",
+    "text": "The new quantum processor architecture introduces a 128-qubit grid with error-correction overhead reduced by 30%. Utilizing topological surface codes, the coherence time has been extended to 500 microseconds. Competitor benchmarking indicates a 2x advantage in quantum volume compared to the previous generation model released in 2024. Cooling requirements remain stringent, demanding continuous operation at 15 millikelvin. The system integrates a novel microwave control logic that minimizes cross-talk between adjacent qubits."
+  },
+  {
+    "id": "doc_005",
+    "domain": "finance",
+    "text": "Market analysis indicates a strong shift towards decentralized infrastructure. The target company holds a 40% market share in the enterprise blockchain sector. Their latest Series C funding round raised $120 million at a $1.5 billion valuation, led by prominent venture capital firms. Due diligence reveals potential regulatory risks in the EU market concerning data sovereignty compliance under the new GDPR amendments. We recommend structuring the acquisition with performance-based earn-outs to mitigate downside risk."
+  },
+  {
+    "id": "doc_006",
+    "domain": "medical",
+    "text": "A comprehensive review of the clinical trial data for the novel GLP-1 receptor agonist shows statistically significant weight loss in the cohort over a 52-week period. Average reduction in body mass index (BMI) was 15%. However, gastrointestinal adverse events were reported in 35% of participants, leading to a 5% dropout rate. The safety profile is largely consistent with existing medications in this class. Approval from the regulatory board is anticipated by Q3, pending the final submission of the Phase 3 safety addendum."
+  },
+  {
+    "id": "doc_007",
+    "domain": "legal",
+    "text": "Section 4.2: Indemnification. The Contractor shall indemnify and hold harmless the Client from any claims, damages, or liabilities arising out of the Contractor's gross negligence or willful misconduct during the performance of the Services. This indemnification obligation survives the termination of this Contract. Furthermore, the Contractor is required to maintain professional liability insurance with a minimum coverage limit of $2,000,000 per occurrence. Proof of insurance must be provided within 10 days of the execution of this contract."
+  },
+  {
+    "id": "doc_008",
+    "domain": "technology",
+    "text": "The implementation of the multi-agent orchestration framework drastically improved the latency of the long-context retrieval pipeline. By distributing the semantic chunking tasks across worker nodes, processing time for a 100k token document was reduced from 45 seconds to just 12 seconds. The Fact Verifier agent demonstrated a 98% success rate in detecting hallucinated claims injected during testing. The architecture relies on an asynchronous event-driven model utilizing Server-Sent Events (SSE) for real-time telemetry."
+  }
+]

@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* CoverFi-inspired Design System — Gold + Violet on Deep Dark Blue */
+:root {
+  --background: #0f1118;
+  --foreground: #f8f9fa;
+  --card: #13161f;
+  --card-foreground: #f8f9fa;
+  --primary: #f0b90b;          /* CoverFi Gold */
+  --primary-foreground: #000000;
+  --secondary: #8b5cf6;        /* Violet */
+  --secondary-foreground: #f8f9fa;
+  --muted: #1a1d28;
+  --muted-foreground: #6b7280;
+  --accent: #f0b90b;
+  --accent-foreground: #000000;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8f9fa;
+  --border: rgba(255,255,255,0.07);
+  --input: #1a1d28;
+  --ring: #f0b90b;
+  --radius: 1rem;
+
+  /* Brand tokens */
+  --gold: #f0b90b;
+  --gold-glow: rgba(240,185,11,0.35);
+  --violet: #8b5cf6;
+  --violet-glow: rgba(139,92,246,0.35);
+  --teal: #14b8a6;
+  --teal-glow: rgba(20,184,166,0.25);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-12px) scale(1.02); }
+  }
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px var(--gold-glow), 0 0 40px var(--gold-glow); }
+    50% { box-shadow: 0 0 35px var(--gold-glow), 0 0 70px var(--gold-glow); }
+  }
+  @keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@layer base {
+  * { border-color: var(--border); box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+}
+
+/* ── Glass Card — CoverFi style ──────────────────────── */
+.glass-panel {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ── Gold gradient text ──────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #f0b90b 0%, #f5d060 50%, #f0b90b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-violet {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Gold glow button ────────────────────────────────── */
+.btn-gold {
+  background: var(--gold);
+  color: #000;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.65rem 1.75rem;
+  box-shadow: 0 0 25px var(--gold-glow), 0 4px 15px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+.btn-gold:hover {
+  box-shadow: 0 0 40px var(--gold-glow), 0 8px 25px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+
+/* ── Outline button ──────────────────────────────────── */
+.btn-outline {
+  background: transparent;
+  color: var(--foreground);
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.65rem 1.75rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.btn-outline:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* ── Glow border card on hover ───────────────────────── */
+.glow-border {
+  position: relative;
+  transition: box-shadow 0.3s ease;
+}
+.glow-border:hover {
+  box-shadow: 0 0 0 1px var(--gold), 0 0 30px var(--gold-glow);
+}
+
+/* ── Scan line animation ─────────────────────────────── */
+.scan-line {
+  animation: scan 2.5s linear infinite;
+}
+
+/* ── Fade up entry ───────────────────────────────────── */
+.fade-up {
+  animation: fade-up 0.5s ease forwards;
+}
+
+/* ── LIVE badge pulse ────────────────────────────────── */
+.live-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  margin-right: 6px;
+  animation: glow-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 6px #10b981;
+}
