@@ -168,7 +168,7 @@ export function AnnotationPreview({ annotations }: { annotations: any[] }) {
         <span>Live Annotation Preview</span>
         <span className="ml-auto text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">LIVE</span>
       </h3>
-      <div className="max-h-[300px] overflow-y-auto space-y-2.5 pr-1">
+      <div className="max-h-[300px] overflow-y-auto space-y-3 pr-1">
         {!annotations.length && (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground text-xs gap-2">
             <Network className="w-8 h-8 opacity-30" />
@@ -176,7 +176,7 @@ export function AnnotationPreview({ annotations }: { annotations: any[] }) {
           </div>
         )}
         <AnimatePresence>
-          {[...annotations].reverse().slice(0, 6).map((a: any, i: number) => (
+          {[...annotations].reverse().slice(0, 4).map((a: any, i: number) => (
             <motion.div
               key={a.chunk}
               initial={{ opacity: 0, x: 20 }}
@@ -187,16 +187,48 @@ export function AnnotationPreview({ annotations }: { annotations: any[] }) {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-violet-400 font-bold">C{a.chunk}</span>
                 <div className="flex items-center gap-1.5">
-                  {a.selfHealed && <span className="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-md">⚕ Healed</span>}
+                  {a.verifier_status === "Self-Corrected" && <span className="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-md">⚕ Healed</span>}
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${a.accuracy >= 92 ? "bg-emerald-500/15 text-emerald-400" : "bg-yellow-500/15 text-yellow-400"}`}>{a.accuracy}%</span>
                 </div>
               </div>
-              <div className="space-y-0.5 text-[11px]">
-                <p><span className="text-blue-400">label</span>: <span className="text-white">"{a.domain}"</span></p>
-                <p><span className="text-pink-400">sentiment</span>: <span className="text-white">"{a.sentiment}"</span></p>
-                <p><span className="text-yellow-400">confidence</span>: <span className="text-white">{(a.confidence/100).toFixed(3)}</span></p>
-                <p><span className="text-emerald-400">entities</span>: <span className="text-muted-foreground">[{(a.entities||[]).slice(0,2).map((e:string)=>`"${e}"`).join(", ")}]</span></p>
-              </div>
+              <details className="cursor-pointer group">
+                <summary className="text-[11px] text-white/70 hover:text-white mb-1 focus:outline-none flex justify-between">
+                  <span>Structured Output (JSON)</span>
+                  <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="space-y-1 text-[11px] mt-2 bg-black/20 p-2 rounded border border-white/5">
+                  <p><span className="text-blue-400">"label"</span>: <span className="text-emerald-300">"{a.label}"</span>,</p>
+                  <p><span className="text-blue-400">"sentiment"</span>: <span className="text-emerald-300">"{a.sentiment}"</span>,</p>
+                  <p><span className="text-blue-400">"confidence"</span>: <span className="text-yellow-400">{(a.confidence/100).toFixed(3)}</span>,</p>
+                  
+                  <p><span className="text-blue-400">"entities"</span>: <span className="text-white/60">[</span></p>
+                  <div className="pl-3 space-y-0.5">
+                    {(a.entities||[]).map((e:string, i:number, arr:string[])=>(
+                       <p key={i}><span className="text-orange-300">"{e}"</span>{i < arr.length-1 ? "," : ""}</p>
+                    ))}
+                  </div>
+                  <p className="text-white/60">],</p>
+
+                  <p><span className="text-blue-400">"evidence_spans"</span>: <span className="text-white/60">[</span></p>
+                  <div className="pl-3 space-y-0.5">
+                    {(a.evidence_spans||[]).map((e:string, i:number, arr:string[])=>(
+                       <p key={i}><span className="text-orange-300">"{e}"</span>{i < arr.length-1 ? "," : ""}</p>
+                    ))}
+                  </div>
+                  <p className="text-white/60">],</p>
+
+                  <p><span className="text-blue-400">"contradictions_detected"</span>: <span className="text-white/60">[</span></p>
+                  <div className="pl-3 space-y-0.5">
+                    {(a.contradictions_detected||[]).map((e:string, i:number, arr:string[])=>(
+                       <p key={i} className={e === "None detected" ? "text-emerald-400" : "text-red-400"}>"{e}"{i < arr.length-1 ? "," : ""}</p>
+                    ))}
+                  </div>
+                  <p className="text-white/60">],</p>
+                  
+                  <p><span className="text-blue-400">"verifier_status"</span>: <span className="text-emerald-300">"{a.verifier_status}"</span>,</p>
+                  <p><span className="text-blue-400">"hallucination_risk"</span>: <span className={a.hallucination_risk==="High" ? "text-red-400" : "text-emerald-400"}>"{a.hallucination_risk}"</span></p>
+                </div>
+              </details>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -270,7 +302,7 @@ export function QualityChart({ data }: { data: any[] }) {
               </linearGradient>
             </defs>
             <XAxis dataKey="name" stroke="#3f3f46" tick={{fill:"#71717a",fontSize:10}} />
-            <YAxis stroke="#3f3f46" tick={{fill:"#71717a",fontSize:10}} domain={[75,100]} />
+            <YAxis stroke="#3f3f46" tick={{fill:"#71717a",fontSize:10}} domain={[60,100]} />
             <Tooltip contentStyle={{background:"#09090b",border:"1px solid #27272a",borderRadius:"12px",fontSize:"12px"}} />
             <Area type="monotone" dataKey="accuracy" stroke="#8b5cf6" fill="url(#gA)" strokeWidth={2} dot={{ fill:"#8b5cf6", r:3 }} isAnimationActive />
             <Area type="monotone" dataKey="confidence" stroke="#3b82f6" fill="url(#gC)" strokeWidth={2} dot={{ fill:"#3b82f6", r:3 }} isAnimationActive />
@@ -282,6 +314,45 @@ export function QualityChart({ data }: { data: any[] }) {
             Awaiting inference...
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Annotation Lineage Tracking
+export function AnnotationLineage({ annotations }: { annotations: any[] }) {
+  return (
+    <div className="glass-panel p-5 rounded-2xl border border-white/8 h-full">
+      <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+        <Network className="w-4 h-4 text-emerald-400" />
+        <span>Annotation Lineage</span>
+      </h3>
+      <div className="max-h-[300px] overflow-y-auto space-y-2.5 pr-1">
+        {!annotations.length && (
+           <div className="text-muted-foreground text-xs text-center py-10 flex flex-col items-center gap-2">
+             <Network className="w-6 h-6 opacity-30" />
+             Awaiting data...
+           </div>
+        )}
+        <AnimatePresence>
+          {[...annotations].reverse().slice(0, 5).map((a: any, i: number) => (
+            <motion.div key={a.chunk} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+               className="bg-white/[0.03] border border-white/8 rounded-xl p-3 text-xs">
+              <div className="flex justify-between items-center mb-2 border-b border-white/10 pb-2">
+                <span className="font-bold text-white">ID: {a.source_chunk || `A-204${a.chunk}`}</span>
+                <span className={`px-2 py-0.5 rounded text-[10px] ${a.hallucination_risk==="High" ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400"}`}>
+                  Risk: {a.hallucination_risk}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                <p>Source Chunk: <span className="text-white">C{a.chunk}</span></p>
+                <p>Verifier Passes: <span className="text-white">{a.verifier_passes || 1}</span></p>
+                <p>Consensus: <span className="text-yellow-400">{a.consensus_score || "N/A"}</span></p>
+                <p>Status: <span className="text-blue-400">{a.verifier_status}</span></p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );

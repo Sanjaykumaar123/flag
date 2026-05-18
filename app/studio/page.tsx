@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Award, BrainCircuit, ChevronLeft, Database, FileText, Network, Settings, Sparkles, Upload, Sliders, Shield, Cpu, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef } from "react";
-import { GlowOrbs, StatCard, AgentCard, AnnotationHeatmap, AnnotationPreview, ICLInspector, QualityChart } from "@/components/StudioUI";
+import { GlowOrbs, StatCard, AgentCard, AnnotationHeatmap, AnnotationPreview, ICLInspector, QualityChart, AnnotationLineage } from "@/components/StudioUI";
 
 type Phase = "idle"|"dataset_loaded"|"annotating"|"validating"|"complete";
 
@@ -83,7 +83,10 @@ export default function StudioPage() {
       submitted_at: new Date().toISOString(),
       metrics:{ f1:stats.f1, precision:stats.precision, recall:stats.recall, confidence:stats.confidence, chunks:stats.chunks, hallucinations_blocked:stats.hallucinations },
       annotations: annotations.map((a:any) => ({
-        chunk_id:a.chunk, label:a.domain, sentiment:a.sentiment, named_entities:a.entities||[],
+        chunk_id:a.chunk, source_chunk:a.source_chunk, label:a.label, sentiment:a.sentiment, named_entities:a.entities||[],
+        evidence_spans:a.evidence_spans||[], contradictions_detected:a.contradictions_detected||[],
+        verifier_status:a.verifier_status, hallucination_risk:a.hallucination_risk,
+        consensus_score:a.consensus_score, verifier_passes:a.verifier_passes,
         summary:a.summary, confidence:(a.confidence/100).toFixed(3), accuracy:(a.accuracy/100).toFixed(3),
       }))
     };
@@ -322,11 +325,12 @@ export default function StudioPage() {
           {/* HEATMAP */}
           {phase!=="idle" && annotations.length > 0 && <AnnotationHeatmap annotations={annotations} />}
 
-          {/* PREVIEW + ICL */}
+          {/* PREVIEW + ICL + LINEAGE */}
           {phase!=="idle" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               <ICLInspector annotations={annotations} />
               <AnnotationPreview annotations={annotations} />
+              <AnnotationLineage annotations={annotations} />
             </div>
           )}
 
