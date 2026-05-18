@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { href: "#features", label: "Features" },
   { href: "#architecture", label: "Architecture" },
   { href: "#metrics", label: "Evaluation" },
+  { href: "/diagnostics", label: "Diagnostics" },
   { href: "/studio", label: "Studio" },
 ];
 
