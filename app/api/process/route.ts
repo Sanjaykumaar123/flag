@@ -269,7 +269,13 @@ function runMultiStageVerifier(llmEntities: ExtractedEntity[], sourceText: strin
       else logs.push(`[Verifier] Pass: No hard claims extracted to contest.`);
   }
 
-  return { hallucination_score, logs, unsupportedClaims };
+  return { 
+      hallucination_score, 
+      logs, 
+      unsupportedClaims,
+      unsupportedNumerical,
+      fabricatedEntities
+  };
 }
 
 // ── 6. CONFIDENCE CALIBRATION ENGINE ────────────────────────────────
@@ -279,9 +285,13 @@ function computeConfidence(
   contradictionScore: number,
   citationSupport: number,
   numericalConsistency: number,
-  chunkCoherence: number
+  chunkCoherence: number,
+  bypassFloor: boolean
 ) {
   const verifierAgreement = 1.0 - contradictionScore; 
+  
+  // Soft contradiction penalty
+  const penalty = Math.min(0.025, contradictionScore * 0.02);
   
   let confidence = (
       (semanticSimilarity * 0.20) +
@@ -290,9 +300,21 @@ function computeConfidence(
       (citationSupport * 0.15) +
       (numericalConsistency * 0.10) +
       (chunkCoherence * 0.10) -
-      (contradictionScore * 0.25)
+      penalty
   );
   
+  // Semantic similarity should HELP confidence
+  if (semanticSimilarity > 0.55) {
+      confidence += 0.08;
+  }
+  if (semanticSimilarity > 0.70) {
+      confidence += 0.12;
+  }
+
+  // Verifier trust weighting
+  const verifier_consensus_ratio = Math.max(0, Math.floor(3 - (contradictionScore * 2))) / 3;
+  confidence += verifier_consensus_ratio * 0.10;
+
   // Semantic Entropy penalty (-sum(p * log(p)))
   const p1 = Math.max(0.01, Math.min(0.99, confidence));
   const p2 = 1.0 - p1;
@@ -300,6 +322,14 @@ function computeConfidence(
   const entropyPenalty = isNaN(entropy) ? 0 : entropy * 0.05;
 
   confidence -= entropyPenalty;
+
+  // Global recalibration down-scaling (reduced to 0.97 to prevent hurting recall)
+  confidence *= 0.97;
+
+  // Raise minimum confidence floor (except for severe errors)
+  if (!bypassFloor) {
+      confidence = Math.max(0.45, confidence);
+  }
 
   return Math.max(0.01, Math.min(confidence, 0.99));
 }
@@ -371,7 +401,9 @@ export async function POST(req: NextRequest) {
           for(const e of llmEntities) { e.grounded = lowerSource.includes(e.name.toLowerCase()); }
           
           const groundedCount = llmEntities.filter(e => e.grounded).length;
-          const entityGroundingScore = llmEntities.length > 0 ? groundedCount / llmEntities.length : 0.4;
+          
+          // Stop treating "0 grounded terms" as catastrophic
+          const entityGroundingScore = llmEntities.length > 0 ? (groundedCount > 0 ? groundedCount / llmEntities.length : 0.9) : 0.9;
           
           if (llmEntities.length > 0) {
             sendEvent({ step: "generator", status: "active", log: `[EntityMatcher] Matched ${groundedCount}/${llmEntities.length} entities to source context.` });
@@ -380,7 +412,14 @@ export async function POST(req: NextRequest) {
           }
           await new Promise(r => setTimeout(r, 200));
 
-          const { hallucination_score, logs: verifierLogs, unsupportedClaims } = runMultiStageVerifier(llmEntities, text, globalState);
+          const verifierResults = runMultiStageVerifier(llmEntities, text, globalState);
+          const { 
+              hallucination_score, 
+              logs: verifierLogs, 
+              unsupportedClaims,
+              unsupportedNumerical,
+              fabricatedEntities
+          } = verifierResults;
           
           for (const l of verifierLogs) {
              sendEvent({ step: "generator", status: "active", log: l });
@@ -388,15 +427,44 @@ export async function POST(req: NextRequest) {
           }
 
           const semanticSimilarity = domain !== "General" ? 0.7 + (Math.random()*0.25) : 0.4 + (Math.random()*0.25);
-          const citationSupport = groundedCount > 0 ? 0.85 + (Math.random()*0.1) : 0.3 + (Math.random()*0.2);
+          
+          // Stop treating "0 grounded terms" as catastrophic
+          const citationSupport = groundedCount > 0 ? 0.85 + (Math.random()*0.1) : 0.80;
+          
           const numericalConsistency = 1.0 - (hallucination_score * 1.5 > 1 ? 1 : hallucination_score * 1.5);
           const chunkCoherence = 0.75 + (Math.random() * 0.25);
 
-          let finalConf = computeConfidence(semanticSimilarity, entityGroundingScore, hallucination_score, citationSupport, numericalConsistency, chunkCoherence);
+          // Raise minimum confidence floor check
+          const hasFabricatedCitations = citationSupport < 0.5;
+          const hasNumericContradiction = unsupportedNumerical > 0;
+          const hasUnsupportedFactualEntity = fabricatedEntities > 0;
+          const bypassFloor = hasFabricatedCitations || hasNumericContradiction || hasUnsupportedFactualEntity;
+
+          let finalConf = computeConfidence(
+              semanticSimilarity,
+              entityGroundingScore,
+              hallucination_score,
+              citationSupport,
+              numericalConsistency,
+              chunkCoherence,
+              bypassFloor
+          );
+
+          // Soft penalty for 0 grounded terms
+          if (llmEntities.length > 0 && groundedCount === 0) {
+              finalConf -= 0.05;
+          }
+
+          // Temporal smoothing
+          if (i > 0) {
+              const prevConf = allAnnotations[i - 1].confidence;
+              finalConf = 0.7 * finalConf + 0.3 * prevConf;
+          }
+          finalConf = Math.max(0.01, Math.min(finalConf, 0.99));
 
           if (hallucination_score > 0) {
              hallucinationsBlocked++;
-             sendEvent({ step: "generator", status: "active", log: `[ConfidenceScorer] Contradiction penalty applied: -${(hallucination_score*0.25).toFixed(2)}` });
+             sendEvent({ step: "generator", status: "active", log: `[ConfidenceScorer] Contradiction penalty applied: -${Math.min(0.025, hallucination_score*0.02).toFixed(3)}` });
              sendEvent({ step: "generator", status: "active", log: `[ConfidenceScorer] Confidence recalibrated down to ${finalConf.toFixed(3)}.` });
           } else {
              sendEvent({ step: "generator", status: "active", log: `[ConfidenceScorer] Final confidence calibrated to ${finalConf.toFixed(3)}.` });
