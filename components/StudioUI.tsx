@@ -123,7 +123,7 @@ export function AnnotationHeatmap({ annotations }: { annotations: any[] }) {
       </h3>
       <div className="flex flex-wrap gap-1.5 items-center">
         {annotations.map((a: any, i: number) => {
-          const acc = a.accuracy;
+          const acc = Number(a.accuracy);
           const bg = acc >= 96 ? "#10b981" : acc >= 92 ? "#22c55e" : acc >= 88 ? "#eab308" : "#ef4444";
           return (
             <motion.div
@@ -131,17 +131,17 @@ export function AnnotationHeatmap({ annotations }: { annotations: any[] }) {
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: i * 0.05 }}
-              title={`C${a.chunk}: ${acc}% | ${a.domain}${a.selfHealed ? " ⚕️" : ""}`}
+              title={`C${a.chunk}: ${acc.toFixed(1)}% | ${a.domain}${a.selfHealed ? " ⚕️" : ""}`}
               style={{ backgroundColor: bg }}
               className="relative w-10 h-10 rounded-lg opacity-85 hover:opacity-100 hover:scale-110 transition-all cursor-pointer flex items-center justify-center group shadow-lg"
             >
-              <span className="text-[10px] font-bold text-black select-none">{acc}</span>
+              <span className="text-[10px] font-bold text-black select-none">{acc.toFixed(0)}</span>
               {a.selfHealed && (
                 <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-white rounded-full text-[8px] flex items-center justify-center text-black shadow-sm">⚕</span>
               )}
               <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col z-30 bg-zinc-900 border border-white/10 rounded-xl p-2.5 text-xs whitespace-nowrap shadow-2xl gap-0.5">
                 <span className="text-white font-semibold">C{a.chunk} · {a.domain}</span>
-                <span className="text-muted-foreground">Accuracy: {acc}% · Conf: {a.confidence}%</span>
+                <span className="text-muted-foreground">Accuracy: {acc.toFixed(1)}% · Conf: {Number(a.confidence).toFixed(1)}%</span>
                 {a.selfHealed && <span className="text-emerald-400">⚕️ Auto self-healed</span>}
               </div>
             </motion.div>
@@ -188,7 +188,7 @@ export function AnnotationPreview({ annotations }: { annotations: any[] }) {
                 <span className="text-violet-400 font-bold">C{a.chunk}</span>
                 <div className="flex items-center gap-1.5">
                   {a.verifier_status === "Self-Corrected" && <span className="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-md">⚕ Healed</span>}
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${a.accuracy >= 92 ? "bg-emerald-500/15 text-emerald-400" : "bg-yellow-500/15 text-yellow-400"}`}>{a.accuracy}%</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${Number(a.accuracy) >= 92 ? "bg-emerald-500/15 text-emerald-400" : "bg-yellow-500/15 text-yellow-400"}`}>{Number(a.accuracy).toFixed(1)}%</span>
                 </div>
               </div>
               <details className="cursor-pointer group">
@@ -347,7 +347,7 @@ export function AnnotationLineage({ annotations }: { annotations: any[] }) {
               <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
                 <p>Source Chunk: <span className="text-white">C{a.chunk}</span></p>
                 <p>Verifier Passes: <span className="text-white">{a.verifier_passes || 1}</span></p>
-                <p>Consensus: <span className="text-yellow-400">{a.consensus_score || "N/A"}</span></p>
+                <p>Consensus: <span className="text-yellow-400">{a.consensus_score ? parseFloat(a.consensus_score).toFixed(1) + "%" : "N/A"}</span></p>
                 <p>Status: <span className="text-blue-400">{a.verifier_status}</span></p>
               </div>
             </motion.div>
