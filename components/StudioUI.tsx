@@ -141,7 +141,7 @@ export function AnnotationHeatmap({ annotations }: { annotations: any[] }) {
               )}
               <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col z-30 bg-zinc-900 border border-white/10 rounded-xl p-2.5 text-xs whitespace-nowrap shadow-2xl gap-0.5">
                 <span className="text-white font-semibold">C{a.chunk} · {a.domain}</span>
-                <span className="text-muted-foreground">Accuracy: {acc.toFixed(1)}% · Conf: {Number(a.confidence).toFixed(1)}%</span>
+                <span className="text-muted-foreground">Accuracy: {acc.toFixed(1)}% · Conf: {(Number(a.confidence)*100).toFixed(1)}%</span>
                 {a.selfHealed && <span className="text-emerald-400">⚕️ Auto self-healed</span>}
               </div>
             </motion.div>
@@ -199,7 +199,7 @@ export function AnnotationPreview({ annotations }: { annotations: any[] }) {
                 <div className="space-y-1 text-[11px] mt-2 bg-black/20 p-2 rounded border border-white/5">
                   <p><span className="text-blue-400">"label"</span>: <span className="text-emerald-300">"{a.label}"</span>,</p>
                   <p><span className="text-blue-400">"sentiment"</span>: <span className="text-emerald-300">"{a.sentiment}"</span>,</p>
-                  <p><span className="text-blue-400">"confidence"</span>: <span className="text-yellow-400">{(a.confidence/100).toFixed(3)}</span>,</p>
+                  <p><span className="text-blue-400">"confidence"</span>: <span className="text-yellow-400">{Number(a.confidence).toFixed(3)}</span>,</p>
                   
                   <p><span className="text-blue-400">"entities"</span>: <span className="text-white/60">[</span></p>
                   <div className="pl-3 space-y-0.5">

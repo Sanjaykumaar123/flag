@@ -77,22 +77,12 @@ export default function StudioPage() {
 
   const exportSubmission = () => {
     if (!annotations.length) return;
-    const out = {
-      participant:"ContextForge AI", track:"FlagOS Track 3 — Automatic Data Annotation",
-      model:"Qwen3-4B (ICL)", strategy:"Adaptive Few-Shot In-Context Learning",
-      submitted_at: new Date().toISOString(),
-      metrics:{ f1:stats.f1, precision:stats.precision, recall:stats.recall, confidence:stats.confidence, chunks:stats.chunks, hallucinations_blocked:stats.hallucinations },
-      annotations: annotations.map((a:any) => ({
-        chunk_id:a.chunk, source_chunk:a.source_chunk, label:a.label, sentiment:a.sentiment, named_entities:a.entities||[],
-        evidence_spans:a.evidence_spans||[], contradictions_detected:a.contradictions_detected||[],
-        verifier_status:a.verifier_status, hallucination_risk:a.hallucination_risk,
-        consensus_score:a.consensus_score, verifier_passes:a.verifier_passes,
-        summary:a.summary, confidence:(a.confidence/100).toFixed(3), accuracy:(a.accuracy/100).toFixed(3),
-      }))
-    };
-    const blob = new Blob([JSON.stringify(out,null,2)], { type:"application/json" });
+    const headers = ["id", "label", "sentiment", "confidence"];
+    const rows = annotations.map(a => `${a.chunk},"${a.label}","${a.sentiment}",${Number(a.confidence).toFixed(3)}`);
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type:"text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href=url; a.download="track3_submission.json";
+    const a = document.createElement("a"); a.href=url; a.download="submission.csv";
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   };
 
