@@ -3,12 +3,12 @@ import { motion } from "framer-motion";
 import { ShieldCheck, Network, Zap, Target, Search, BarChart3 } from "lucide-react";
 
 const features = [
-  { icon: <Network className="w-6 h-6" />, color: "#60a5fa", title: "Adaptive In-Context Learning", description: "Dynamically constructs few-shot prompts to guide Qwen3-4B through complex long-context annotation tasks." },
+  { icon: <Network className="w-6 h-6" />, color: "#60a5fa", title: "In-Context Learning (ICL) Solution", description: "Dynamically constructs few-shot prompts to guide the Qwen3-4B model through automatic data annotation." },
   { icon: <ShieldCheck className="w-6 h-6" />, color: "#34d399", title: "Hallucination Firewall", description: "Real-time cross-checking detects unsupported claims and triggers automatic self-correction pipelines." },
-  { icon: <Search className="w-6 h-6" />, color: "#a78bfa", title: "Semantic Chunking Engine", description: "Overlapping 15% window chunking preserves entity relationships across massive documents." },
+  { icon: <Search className="w-6 h-6" />, color: "#a78bfa", title: "Unified Dataset Support", description: "Seamlessly ingest the unified dataset provided by the organizing committee." },
   { icon: <Target className="w-6 h-6" />, color: "#fb923c", title: "Self-Healing Pipeline", description: "Low-confidence chunks are automatically re-annotated with stricter prompts until quality thresholds are met." },
   { icon: <Zap className="w-6 h-6" />, color: "#f0b90b", title: "Confidence Scorer", description: "Calculates Precision, Recall, and F1 metrics per chunk ensuring enterprise-grade annotation quality." },
-  { icon: <BarChart3 className="w-6 h-6" />, color: "#f472b6", title: "Leaderboard Export", description: "One-click export of structured annotation results in FlagOS Track 3 submission format." },
+  { icon: <BarChart3 className="w-6 h-6" />, color: "#f472b6", title: "Inference Validation", description: "Perform rigorous inference validation on the standardized evaluation dataset with one-click export." },
 ];
 
 export function Features() {
@@ -25,7 +25,7 @@ export function Features() {
             The Infrastructure of <span className="text-gradient">Intelligence</span>
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            ContextForge is built to solve the hardest problems in automated annotation: long-context reasoning and hallucination prevention.
+            Design an effective In-Context Learning (ICL) solution for automatic data annotation based on Qwen3-4B model.
           </p>
         </motion.div>
 

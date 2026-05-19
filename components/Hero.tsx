@@ -47,7 +47,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl leading-relaxed"
           >
-            ContextForge AI transforms manual labeling into autonomous data operations. Powered by specialized agents, adaptive ICL, and a hallucination firewall.
+            An effective In-Context Learning (ICL) solution for automatic data annotation based on the Qwen3-4B model. Process the unified dataset and perform robust inference validation on the standardized evaluation dataset.
           </motion.p>
 
           {/* CTAs — CoverFi style */}

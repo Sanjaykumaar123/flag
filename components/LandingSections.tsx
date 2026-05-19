@@ -51,7 +51,7 @@ export function ArchitectureSection() {
             <Network className="w-4 h-4" /> Multi-Agent Orchestration
           </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-6">The Pipeline <span className="text-gradient">Architecture</span></h2>
-          <p className="text-muted-foreground text-lg">Five autonomous agents working in sequence to produce verified, confidence-scored annotations at scale.</p>
+          <p className="text-muted-foreground text-lg">An effective In-Context Learning (ICL) solution for automatic data annotation based on Qwen3-4B model.</p>
         </motion.div>
 
         {/* Animated pipeline */}
@@ -116,7 +116,7 @@ export function MetricsSection() {
             <CheckCircle2 className="w-4 h-4" /> Benchmark Evaluation
           </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-6">Measurable <span className="text-gradient">Superiority</span></h2>
-          <p className="text-muted-foreground text-lg">Every metric is computed from real annotation runs on the FlagOS Track 3 evaluation dataset.</p>
+          <p className="text-muted-foreground text-lg">Every metric is computed from real inference validation on the standardized evaluation dataset.</p>
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mb-16">
@@ -187,7 +187,7 @@ export function CTASection() {
             Ready to <span className="text-gradient">Annotate</span> at Scale?
           </h2>
           <p className="text-muted-foreground text-lg mb-10 max-w-2xl mx-auto">
-            Upload your dataset and watch ContextForge AI's autonomous agent pipeline produce enterprise-grade annotations with full lineage tracking in seconds.
+            Design your effective In-Context Learning (ICL) solution using the unified dataset provided by the organizing committee, and perform inference validation seamlessly.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/studio">

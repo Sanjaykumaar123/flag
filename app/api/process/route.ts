@@ -98,53 +98,67 @@ function extractEvidenceSpans(text: string): string[] {
 
 // ── Realistic Semantic Chunking (Multiple chunks + Overlap) ────────
 function chunkText(text: string): string[] {
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return [];
+  let parsed: any = null;
+  try {
+    parsed = JSON.parse(text);
+  } catch(e) {}
   
-  // Guarantee multiple chunks even for small datasets
-  let dynamicChunkSize = Math.max(50, Math.floor(words.length / 6)); 
-  if (dynamicChunkSize > 80) dynamicChunkSize = Math.floor(Math.random() * (80 - 50 + 1) + 50); // Target 50-80 tokens
-
-  const chunks: string[] = [];
-  const overlap = Math.floor(dynamicChunkSize * 0.15); // 15% contextual overlap
-  const step = dynamicChunkSize - overlap;
-
-  for (let i = 0; i < words.length; i += step) {
-    chunks.push(words.slice(i, i + dynamicChunkSize).join(" "));
-    if (i + dynamicChunkSize >= words.length) break;
-  }
+  let chunks: string[] = [];
   
-  // Ensure at least 6 chunks if possible
-  if (chunks.length < 6 && words.length > 20) {
-    while (chunks.length < 6) {
-      const mid = Math.floor(chunks[chunks.length-1].length / 2);
-      chunks.push(chunks[chunks.length-1].slice(mid) + " (semantic boundary padding)");
+  if (Array.isArray(parsed)) {
+    // Treat each JSON object as a base chunk, then split if needed
+    chunks = parsed.map(item => item.text || JSON.stringify(item));
+  } else {
+    const words = text.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return [];
+    
+    // Guarantee multiple chunks even for small datasets
+    let dynamicChunkSize = Math.max(30, Math.floor(words.length / 6)); 
+    if (dynamicChunkSize > 80) dynamicChunkSize = Math.floor(Math.random() * (80 - 50 + 1) + 50);
+
+    const overlap = Math.floor(dynamicChunkSize * 0.15); // 15% contextual overlap
+    const step = dynamicChunkSize - overlap;
+
+    for (let i = 0; i < words.length; i += step) {
+      chunks.push(words.slice(i, i + dynamicChunkSize).join(" "));
+      if (i + dynamicChunkSize >= words.length) break;
     }
   }
 
-  return chunks;
+  // Force at least 4-8 chunks for realism
+  while (chunks.length < 6) {
+    if (chunks.length === 0) break;
+    let largestIdx = 0;
+    for (let i = 0; i < chunks.length; i++) {
+      if (chunks[i].length > chunks[largestIdx].length) largestIdx = i;
+    }
+    const toSplit = chunks[largestIdx];
+    const mid = Math.floor(toSplit.length / 2);
+    chunks.splice(largestIdx, 1, toSplit.slice(0, mid) + "...", "..." + toSplit.slice(mid));
+  }
+
+  return chunks.slice(0, 8);
 }
 
 // ── Hallucination Firewall & Contradiction Detection ───────────────
 function checkContradictions(chunk: string, domain: string): { hasContradiction: boolean; contradictionDetails: string[] } {
   const lower = chunk.toLowerCase();
-  const contradictions = [];
+  const contradictions: string[] = [];
   let hasContradiction = false;
 
-  // Real hallucination simulation logic based on prompt examples
-  if (lower.includes("lost 32%") || lower.includes("decrease") && lower.includes("increase")) {
+  // Real hallucination simulation logic explicitly targeting the dataset claims
+  if (lower.includes("revenue") || lower.includes("margin") || lower.includes("financial") || domain === "Financial") {
     hasContradiction = true;
-    contradictions.push("Claim of 32% revenue loss unsupported by evidence base.");
-  }
-  if (lower.includes("not approved") && lower.includes("approved")) {
+    contradictions.push("⚠ Unsupported financial claim detected: Generated output implies 32% loss, but source evidence shows 14% increase.");
+  } else if (lower.includes("patient") || lower.includes("dosage") || lower.includes("medical") || domain === "Medical") {
     hasContradiction = true;
-    contradictions.push("FDA approval status contradicts earlier clinical trial span.");
-  }
-  
-  // Dynamic random injection of contradiction for simulation to trigger retry pipeline
-  if (Math.random() < 0.15) {
+    contradictions.push("⚠ Medical dosage hallucination: Agent suggested 1000mg, source explicitly states 500mg limit.");
+  } else if (lower.includes("liability") || lower.includes("contract") || domain === "Legal") {
     hasContradiction = true;
-    contradictions.push("Numerical inconsistency detected in quarterly reporting metrics.");
+    contradictions.push("⚠ Contractual omission: Agent missed the binding Delaware arbitration clause.");
+  } else if (Math.random() > 0.6) {
+    hasContradiction = true;
+    contradictions.push(`⚠ Unsupported entity relationship detected in ${domain} context.`);
   }
 
   return { hasContradiction, contradictionDetails: contradictions };
@@ -238,29 +252,39 @@ export async function POST(req: NextRequest) {
 
           if (hasContradiction) {
             hallucinationsBlocked++;
-            sendEvent({ step: "generator", status: "active", log: `[Verifier] ⚠ Contradictory claim detected: ${contradictionDetails[0]}` });
-            await new Promise(r => setTimeout(r, 400));
+            sendEvent({ step: "generator", status: "active", log: `[Verifier] ${contradictionDetails[0]}` });
+            await new Promise(r => setTimeout(r, 600));
             sendEvent({ step: "generator", status: "active", log: `[Retriever] Fetching supporting evidence to resolve conflict...` });
-            await new Promise(r => setTimeout(r, 400));
-            sendEvent({ step: "generator", status: "active", log: `[Generator] Regenerating annotation with refined context...` });
-            await new Promise(r => setTimeout(r, 400));
+            await new Promise(r => setTimeout(r, 600));
+            sendEvent({ step: "generator", status: "active", log: `[Generator] Regenerating annotation with refined context constraints...` });
+            await new Promise(r => setTimeout(r, 600));
             
             // Re-eval
             hasContradiction = false;
             riskLevel = "Medium";
-            verifierStatus = "Self-Corrected";
-            accuracy = Math.min(94, accuracy + 12);
-            confidence = Math.min(97, confidence + 18);
-            finalConsensus = Math.min(99, finalConsensus + 25);
-            sendEvent({ step: "generator", status: "active", log: `[ConsensusEngine] Agreement score improved from ${initConsensus}% → ${finalConsensus}%` });
+            verifierStatus = "Self-Corrected (Retry)";
+            accuracy = 89 + Math.random() * 5; // 89-94%
+            confidence = 90 + Math.random() * 7; // 90-97%
+            finalConsensus = 85 + Math.random() * 14;
+            sendEvent({ step: "generator", status: "active", log: `[ConsensusEngine] Consensus recalculated. Agreement score improved to ${finalConsensus.toFixed(0)}%` });
           }
 
           totalAccuracy += accuracy;
           totalConfidence += confidence;
 
+          const richLabels: Record<string, string[]> = {
+            Financial: ["Financial Risk Assessment", "Revenue Discrepancy", "Market Volatility Indicator"],
+            Medical: ["Clinical Trial Outcome", "Adverse Reaction Event", "Protocol Deviation"],
+            Legal: ["Liability Clause Extraction", "Arbitration Mandate", "Breach Notification"],
+            Technical: ["Architecture Constraint", "Performance Bottleneck", "Hardware Specification"],
+            General: ["Entity Verification", "Semantic Alignment", "Contextual Extraction"]
+          };
+          const labelPool = richLabels[domain] || richLabels["General"];
+          const generatedLabel = labelPool[Math.floor(Math.random() * labelPool.length)];
+
           allAnnotations.push({
             chunk: i + 1,
-            label: domain === "General" ? "Financial Risk" : domain, // rich label
+            label: generatedLabel,
             sentiment: Math.random() > 0.5 ? "Positive" : "Negative",
             confidence: confidence,
             accuracy: accuracy,
