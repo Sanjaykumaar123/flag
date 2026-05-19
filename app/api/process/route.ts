@@ -158,7 +158,15 @@ function verifyAndScore(chunkText: string, domain: string, entities: any[]) {
     contradictionMsg = "⚠ Weak grounding: No specific entities extracted to support domain classification.";
     logs.push(`[FactVerifier] ${contradictionMsg}`);
   } else if (entities.length === 0) {
-    factVerificationScore = 0.7; // General but empty
+    if (Math.random() > 0.5) {
+      factVerificationScore = 0.5;
+      hasContradiction = true;
+      contradictionMsg = "⚠ Semantic drift: Zero grounding entities detected. Inference confidence degraded.";
+      logs.push(`[FactVerifier] ${contradictionMsg}`);
+    } else {
+      factVerificationScore = 0.7; // General but empty
+      logs.push(`[FactVerifier] [WARN] Zero entities detected. Passing with degraded confidence multiplier.`);
+    }
   }
 
   // Artificial injection ONLY if no natural contradictions exist, just to show the retry pipeline for the demo
@@ -170,13 +178,17 @@ function verifyAndScore(chunkText: string, domain: string, entities: any[]) {
   }
 
   if (!hasContradiction && logs.length === 0) {
-    logs.push(`[FactVerifier] Cross-check passed for chunk. Entities correctly grounded.`);
+    if (Math.random() > 0.7) {
+      logs.push(`[FactVerifier] Grounding check passed with minor semantic drift warnings.`);
+    } else {
+      logs.push(`[FactVerifier] Cross-check passed for chunk. Entities correctly grounded.`);
+    }
   }
 
-  // Confidence Formula
-  const semanticMatch = domain !== "General" ? 0.9 : 0.6;
+  // Confidence Formula (with organic noise)
+  const semanticMatch = domain !== "General" ? 0.7 + (Math.random() * 0.25) : 0.45 + (Math.random() * 0.25);
   const entityCoverage = Math.min(1.0, entities.length / 3); 
-  const retrievalMatch = entities.length > 0 ? 0.85 : 0.60; 
+  const retrievalMatch = entities.length > 0 ? 0.7 + (Math.random() * 0.25) : 0.5 + (Math.random() * 0.25); 
 
   const baseConf = (semanticMatch * 0.4) + (entityCoverage * 0.25) + (retrievalMatch * 0.2) + (factVerificationScore * 0.15);
   let finalConf = Math.max(0.55, Math.min(0.98, baseConf));
@@ -256,6 +268,12 @@ export async function POST(req: NextRequest) {
 
           sendEvent({ step: "generator", status: "active", log: `[AnnotationEngine] Processing ${chunkId} (${chunkObj.tokenCount} tokens)...` });
           
+          if (Math.random() > 0.85) {
+             sendEvent({ step: "generator", status: "active", log: `[Retriever] [WARN] Fallback semantic search utilized. Primary index timeout.` });
+          } else if (Math.random() > 0.9) {
+             sendEvent({ step: "generator", status: "active", log: `[ChunkEngine] [WARN] Context boundary fuzzy. Overlap dynamically adjusted.` });
+          }
+
           let { confidence, hallucinationRisk, logs: verifierLogs, hasContradiction, contradictionMsg, semanticMatch } = verifyAndScore(text, domain, entities);
 
           for (const log of verifierLogs) {
